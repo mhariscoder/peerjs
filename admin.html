@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Broadcasting</title>
+</head>
+<body>
+    <h1>Admin Broadcasting</h1>
+    <input type="text" id="peerid" /><br/>
+
+    <input id="anotherPeersId" type="text" placeholder="Enter user's Peer ID" />
+    <button id="startStreamingButton" onclick="startStreaming()" disabled>Start Streaming</button>
+    <button id="stopStreamingButton" onclick="stopStreaming()" disabled>Stop Streaming</button>
+
+    <video id="remoteVideo" autoplay></video>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        const peer = new Peer(); // Initialize a PeerJS instance
+        let localStream;
+        let remoteVideo = document.getElementById('remoteVideo');
+
+        peer.on('open', (id) => {
+            console.log('Admin peer ID is: ' + id);
+            document.getElementById('peerid').value = id
+            document.getElementById('startStreamingButton').removeAttribute('disabled');
+        });
+
+        async function startStreaming() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                const userPeerId = document.getElementById('anotherPeersId').value;
+
+                const call = peer.call(userPeerId, localStream);
+
+                // const call = peer.call(userPeerId, localStream);
+
+                // call.on('stream', function(remoteStream) {
+                //     console.log('Remote stream received:', remoteStream);
+                //     remoteVideo.srcObject = remoteStream;
+                // });
+
+                document.getElementById('startStreamingButton').setAttribute('disabled', 'disabled');
+                document.getElementById('stopStreamingButton').removeAttribute('disabled');
+            } catch (err) {
+                console.error('Error accessing media devices:', err);
+            }
+        }
+
+        function stopStreaming() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            document.getElementById('startStreamingButton').removeAttribute('disabled');
+            document.getElementById('stopStreamingButton').setAttribute('disabled', 'disabled');
+            remoteVideo.srcObject = null;
+        }
+    </script>
+</body>
+</html>

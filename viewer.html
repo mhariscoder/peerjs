@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User View</title>
+</head>
+<body>
+    <h1>User View</h1>
+
+    <input type="text" id="peerid" /><br/>
+
+    <div id="videoContainer"></div>
+
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        const peer = new Peer(); // Initialize a PeerJS instance
+        let remoteVideo;
+
+        peer.on('open', (id) => {
+            console.log('User peer ID is: ' + id);
+            document.getElementById('peerid').value = id
+        });
+
+        peer.on('call', function(call) {
+            if (!remoteVideo) {
+                remoteVideo = document.createElement('video');
+                remoteVideo.autoplay = true;
+                document.getElementById('videoContainer').appendChild(remoteVideo);
+            }
+
+            const getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+            getUserMedia({ video: true, audio: true }, function(stream) {
+                // call.answer(stream); // Answer the call with an A/V stream.
+                call.answer()
+                call.on('stream', function(remoteStream) {
+                    console.log('Remote stream received:', remoteStream);
+                    remoteVideo.srcObject = remoteStream;
+                });
+            }, function(err) {
+                console.log('Failed to get local stream' ,err);
+            });
+        });
+    </script>
+</body>
+</html>
